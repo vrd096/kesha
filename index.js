@@ -59,46 +59,6 @@ bot.on(message('text'), async (ctx) => {
   ctx.session ??= INITIAL_SESSION;
   const text = ctx.message.text;
 
-  async function getCityCoordinates(cityName) {
-    const url = `https://nominatim.openstreetmap.org/search?q=${cityName}&format=json&limit=1`;
-    try {
-      const response = await axios.get(url);
-      const data = response.data[0];
-      let latitude = data.lat;
-      let longitude = data.lon;
-      getYandexWeather(cityName, latitude, longitude);
-    } catch (error) {
-      console.log(error);
-      const city = cityName.charAt(0).toUpperCase() + cityName.slice(1);
-      ctx.reply(`города ${city} не существует`);
-    }
-  }
-  function getYandexWeather(cityName, latitude, longitude) {
-    const url = `https://api.weather.yandex.ru/v2/forecast?lat=${latitude}&lon=${longitude}&extra=true`;
-    const headers = { 'X-Yandex-API-Key': config.get('YANDEX_API_KEY') };
-    console.log(`Запрос погоды в городе ${cityName} отправлен`);
-
-    axios
-      .get(url, { headers: headers })
-      .then((response) => {
-        const fact = response.data.fact;
-        const temp = fact.temp;
-        // const condition = fact.condition;
-        const windSpeed = fact.wind_speed;
-        const pressureMm = fact.pressure_mm;
-        const humidity = fact.humidity;
-        const city = cityName.charAt(0).toUpperCase() + cityName.slice(1);
-
-        ctx.reply(
-          `Сейчас в городе ${city} ${temp} градусов по цельсию. Ветер ${windSpeed} м/с. Давление ${pressureMm} мм рт. ст. Влажность ${humidity}%`,
-        );
-      })
-      .catch((error) => {
-        console.error(error);
-        ctx.reply(`Ошибка при запросе погоды в городе ${city}:`, error);
-      });
-  }
-
   if (text.includes('Кеша')) {
     const textAsked = text.slice(5);
     try {
@@ -121,10 +81,7 @@ bot.on(message('text'), async (ctx) => {
       );
     }
   }
-  if (text.includes('погода')) {
-    const city = text.split(' ').slice(-1)[0];
-    getCityCoordinates(city);
-  }
+
   if (text.match(/^цена (.+)$/i)) {
     const stockName = text.match(/^цена (.+)$/i)[1];
 
